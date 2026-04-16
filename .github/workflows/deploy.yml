@@ -25,7 +25,14 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+        env:
+          VITE_RPC_URL: ${{ vars.VITE_RPC_URL != '' && vars.VITE_RPC_URL || 'https://api.devnet.solana.com' }}
+          VITE_TOKEN_PROGRAM_ID: ${{ vars.VITE_TOKEN_PROGRAM_ID != '' && vars.VITE_TOKEN_PROGRAM_ID || '3Eoy49pVjDBm4KArrTERpotuZmaAnouj5TyALW2ALcAw' }}
+          VITE_FAUCET_PROGRAM_ID: ${{ vars.VITE_FAUCET_PROGRAM_ID != '' && vars.VITE_FAUCET_PROGRAM_ID || '28jX1tPZKkahfcV4VJCG7GVJZdowSMXn168ihanac9cn' }}
+          VITE_BURNER_PROGRAM_ID: ${{ vars.VITE_BURNER_PROGRAM_ID != '' && vars.VITE_BURNER_PROGRAM_ID || 'D7R4JgGKkB2wsDBnpnMEyiRr2RKbCZfMyuRqKfqyMWGR' }}
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist

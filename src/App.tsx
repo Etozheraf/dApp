@@ -4,7 +4,6 @@ import {
   PublicKey,
   SystemProgram,
   Transaction,
-  clusterApiUrl,
 } from "@solana/web3.js";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -23,16 +22,18 @@ import {
 import { burnerContractIdl, faucetContractIdl, tokenContractIdl } from "./idl";
 import "./App.css";
 
-const TOKEN_PROGRAM_ID_PK = new PublicKey(
-  import.meta.env.VITE_TOKEN_PROGRAM_ID ?? tokenContractIdl.address
-);
-const FAUCET_PROGRAM_ID_PK = new PublicKey(
-  import.meta.env.VITE_FAUCET_PROGRAM_ID ?? faucetContractIdl.address
-);
-const BURNER_PROGRAM_ID_PK = new PublicKey(
-  import.meta.env.VITE_BURNER_PROGRAM_ID ?? burnerContractIdl.address
-);
-const RPC_URL = import.meta.env.VITE_RPC_URL ?? clusterApiUrl("devnet");
+const RPC_URL = "https://api.devnet.solana.com";
+const TOKEN_PROGRAM_ADDRESS = "d8Moyb74LyVmiJUaEjJrK7gVJ9UfJ39FyaeBLaD4jzu";
+const FAUCET_PROGRAM_ADDRESS = "28jX1tPZKkahfcV4VJCG7GVJZdowSMXn168ihanac9cn";
+const BURNER_PROGRAM_ADDRESS = "D7R4JgGKkB2wsDBnpnMEyiRr2RKbCZfMyuRqKfqyMWGR";
+
+const TOKEN_PROGRAM_ID_PK = new PublicKey(TOKEN_PROGRAM_ADDRESS);
+const FAUCET_PROGRAM_ID_PK = new PublicKey(FAUCET_PROGRAM_ADDRESS);
+const BURNER_PROGRAM_ID_PK = new PublicKey(BURNER_PROGRAM_ADDRESS);
+
+const tokenContractIdlWithAddress = { ...tokenContractIdl, address: TOKEN_PROGRAM_ADDRESS };
+const faucetContractIdlWithAddress = { ...faucetContractIdl, address: FAUCET_PROGRAM_ADDRESS };
+const burnerContractIdlWithAddress = { ...burnerContractIdl, address: BURNER_PROGRAM_ADDRESS };
 
 const TOKEN_CONFIG_SEED = Buffer.from("config");
 const FAUCET_CONFIG_SEED = Buffer.from("faucet_config");
@@ -100,9 +101,9 @@ function App() {
   const refreshState = useCallback(async () => {
     if (!provider || !publicKey) return;
 
-    const tokenProgram = new Program(tokenContractIdl as unknown as Idl, provider) as any;
-    const faucetProgram = new Program(faucetContractIdl as unknown as Idl, provider) as any;
-    const burnerProgram = new Program(burnerContractIdl as unknown as Idl, provider) as any;
+    const tokenProgram = new Program(tokenContractIdlWithAddress as unknown as Idl, provider) as any;
+    const faucetProgram = new Program(faucetContractIdlWithAddress as unknown as Idl, provider) as any;
+    const burnerProgram = new Program(burnerContractIdlWithAddress as unknown as Idl, provider) as any;
 
     const [tokenConfigPda] = PublicKey.findProgramAddressSync(
       [TOKEN_CONFIG_SEED],
@@ -214,7 +215,7 @@ function App() {
     if (!provider || !publicKey || !token) return;
     setBusy(true);
     try {
-      const faucetProgram = new Program(faucetContractIdl as unknown as Idl, provider) as any;
+      const faucetProgram = new Program(faucetContractIdlWithAddress as unknown as Idl, provider) as any;
       const [faucetConfigPda] = PublicKey.findProgramAddressSync([FAUCET_CONFIG_SEED], FAUCET_PROGRAM_ID_PK);
       const faucetConfig = (await faucetProgram.account.faucetConfig.fetch(faucetConfigPda)) as {
         mint: PublicKey;
@@ -263,7 +264,7 @@ function App() {
       await refreshState();
     } catch (e) {
       try {
-        const faucetProgram = new Program(faucetContractIdl as unknown as Idl, provider) as any;
+        const faucetProgram = new Program(faucetContractIdlWithAddress as unknown as Idl, provider) as any;
         const [faucetConfigPda] = PublicKey.findProgramAddressSync(
           [FAUCET_CONFIG_SEED],
           FAUCET_PROGRAM_ID_PK
@@ -320,7 +321,7 @@ function App() {
       const amountRaw = parseUiToRaw(burnAmount, token.decimals);
       if (amountRaw <= 0n) throw new Error("Сумма сжигания должна быть > 0.");
 
-      const burnerProgram = new Program(burnerContractIdl as unknown as Idl, provider) as any;
+      const burnerProgram = new Program(burnerContractIdlWithAddress as unknown as Idl, provider) as any;
       const [burnerConfigPda] = PublicKey.findProgramAddressSync(
         [BURNER_CONFIG_SEED],
         BURNER_PROGRAM_ID_PK
